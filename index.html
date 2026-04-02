@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Artemis II — Trajectory as Typographic Gesture</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #080808;
+      overflow-x: hidden;
+    }
+
+    #canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* scroll space — 4 viewport heights to drive the full transition */
+    #scroll-space {
+      height: 400vh;
+    }
+
+    #ui {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      padding: 2rem 2.5rem;
+    }
+
+    #header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    #mission-label {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 0.6rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.22);
+      line-height: 1.7;
+    }
+
+    #mission-label span {
+      display: block;
+    }
+
+    #mission-label .dim {
+      color: rgba(255, 255, 255, 0.1);
+    }
+
+    #phase-label {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 0.6rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.22);
+      text-align: right;
+      transition: color 0.4s ease;
+    }
+
+    #scroll-hint {
+      position: fixed;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 0.55rem;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.15);
+      transition: opacity 0.8s ease;
+      white-space: nowrap;
+    }
+
+    #progress-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      height: 1px;
+      width: 0%;
+      background: rgba(255, 140, 50, 0.6);
+      transition: background 0.4s ease;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="scroll-space"></div>
+
+  <div id="ui">
+    <div id="header">
+      <div id="mission-label">
+        <span>Artemis II</span>
+        <span class="dim">SLS Block 1 Crew &nbsp;/&nbsp; 2026</span>
+        <span class="dim">Kennedy Space Center, FL</span>
+      </div>
+      <div id="phase-label">Formation</div>
+    </div>
+  </div>
+
+  <div id="scroll-hint">scroll to ignite</div>
+
+  <div id="progress-bar"></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
