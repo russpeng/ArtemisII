@@ -14,10 +14,11 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setClearColor(0x080808, 1);
 
 // ── Scene + Camera ───────────────────────────────────────────────────────────
-// Orthographic camera — preserves the typographic scale of the letterforms.
-// The frustum is recalculated on resize to maintain a consistent world height.
-const scene  = new THREE.Scene();
-const FRUSTUM_HEIGHT = 3.0;
+// Orthographic camera driven by a fixed WORLD WIDTH so the text always fits
+// horizontally regardless of portrait/landscape or screen size.
+// worldWidth=4.8 (letterSampler) fits comfortably inside FRUSTUM_WIDTH=6.
+const scene = new THREE.Scene();
+const FRUSTUM_WIDTH = 6.0;
 
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
 camera.position.z = 10;
@@ -29,26 +30,31 @@ scene.add(points);
 // ── Scroll driver ────────────────────────────────────────────────────────────
 const { update: updateScroll } = createScrollDriver(material);
 
-// ── Mouse tracking → u_mouse ─────────────────────────────────────────────────
-// Convert mouse from screen-px to world-space coordinates so the shader
-// can compute a distance from each particle to the cursor.
+// ── Pointer tracking → u_mouse (mouse + touch) ──────────────────────────────
 const mouse = new THREE.Vector2(9999, 9999);
 
+const toWorld = (clientX, clientY) => {
+  const ndcX =  (clientX / window.innerWidth)  * 2 - 1;
+  const ndcY = -(clientY / window.innerHeight) * 2 + 1;
+  const halfW = FRUSTUM_WIDTH / 2;
+  const halfH = FRUSTUM_WIDTH / (2 * (window.innerWidth / window.innerHeight));
+  return new THREE.Vector2(ndcX * halfW, ndcY * halfH);
+};
+
 window.addEventListener('mousemove', (e) => {
-  // NDC: -1 → 1
-  const ndcX =  (e.clientX / window.innerWidth)  * 2 - 1;
-  const ndcY = -(e.clientY / window.innerHeight) * 2 + 1;
-
-  // World space (ortho): multiply NDC by half-frustum extents
-  const halfW = (FRUSTUM_HEIGHT * (window.innerWidth / window.innerHeight)) / 2;
-  const halfH = FRUSTUM_HEIGHT / 2;
-
-  mouse.set(ndcX * halfW, ndcY * halfH);
-  material.uniforms.u_mouse.value.copy(mouse);
+  material.uniforms.u_mouse.value.copy(toWorld(e.clientX, e.clientY));
 }, { passive: true });
 
-// Reset on leave so repulsion doesn't stick to an edge
 window.addEventListener('mouseleave', () => {
+  material.uniforms.u_mouse.value.set(9999, 9999);
+}, { passive: true });
+
+window.addEventListener('touchmove', (e) => {
+  const t = e.touches[0];
+  material.uniforms.u_mouse.value.copy(toWorld(t.clientX, t.clientY));
+}, { passive: true });
+
+window.addEventListener('touchend', () => {
   material.uniforms.u_mouse.value.set(9999, 9999);
 }, { passive: true });
 
@@ -61,8 +67,8 @@ const onResize = () => {
   renderer.setSize(w, h);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  const halfH = FRUSTUM_HEIGHT / 2;
-  const halfW = (FRUSTUM_HEIGHT * aspect) / 2;
+  const halfW = FRUSTUM_WIDTH / 2;
+  const halfH = FRUSTUM_WIDTH / (2 * aspect);
 
   camera.left   = -halfW;
   camera.right  =  halfW;
